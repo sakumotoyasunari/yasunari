@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>名言交換会 - Words Across Japan</title>
+  <style>
+    body {
+      font-family: "游ゴシック", sans-serif;
+      background-color: #fdfaf5;
+      color: #333;
+      padding: 2em;
+      line-height: 1.8;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #2a7f62;
+      text-align: center;
+    }
+    .info-box, .quote-box {
+      background: #ffffff;
+      padding: 1em 1.5em;
+      border-left: 5px solid #2a7f62;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 2em;
+    }
+    .author {
+      font-weight: bold;
+      margin-top: 0.5em;
+    }
+    .poster, .date {
+      color: #555;
+      font-size: 0.9em;
+      margin-top: 0.3em;
+    }
+    .meaning-toggle {
+      color: #2a7f62;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin-top: 0.5em;
+      font-weight: bold;
+    }
+    .meaning {
+      display: none;
+      color: #444;
+      font-size: 0.9em;
+      margin-top: 0.5em;
+      padding-left: 1em;
+      border-left: 3px solid #2a7f62;
+    }
+    .drops {
+      color: #2a7f62;
+      margin-top: 0.3em;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .drops:hover {
+      opacity: 0.7;
+    }
+    .form-box {
+      margin-top: 2em;
+      padding: 1em;
+      background: #ffffff;
+      border-left: 5px solid #2a7f62;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.5em;
+      margin-top: 0.5em;
+      margin-bottom: 1em;
+      font-size: 1em;
+    }
+    button {
+      background: #2a7f62;
+      color: white;
+      padding: 0.7em 1.5em;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ルール編集ボックス -->
+<div class="form-box">
+  <h3>📘 このHPのルール（編集できます）</h3>
+  <textarea id="rulesText" style="height: 200px;" placeholder="ここにルールを書いてください"></textarea>
+  <button onclick="saveRules()">ルールを保存</button>
+</div>
+
+<!-- 保存されたルールの表示 -->
+<div class="info-box" id="rulesDisplay" style="white-space: pre-wrap;"></div>
+
+<script>
+  // ルールを読み込む
+  function loadRules() {
+    const savedRules = localStorage.getItem("hp_rules");
+    if (savedRules) {
+      document.getElementById("rulesText").value = savedRules;
+      document.getElementById("rulesDisplay").innerText = savedRules;
+    }
+  }
+
+  // ルールを保存する
+  function saveRules() {
+    const rules = document.getElementById("rulesText").value;
+    localStorage.setItem("hp_rules", rules);
+    document.getElementById("rulesDisplay").innerText = rules;
+    alert("ルールを保存しました");
+  }
+
+  // ページ読み込み時にルールを復元
+  loadRules();
+</script>
+
+<h1>🌸 名言交換会 - Words Across Japan</h1>
+
+<div class="info-box">
+  <p><strong>主催：</strong>Yasunari Sakumoto（作本 泰周）<br>
+     <strong>共催：</strong>Microsoft Copilot アクア</p>
+</div>
+
+<div id="quotes"></div>
+
+<!-- 名言追加フォーム -->
+<div class="form-box">
+  <h3>📝 名言を追加する</h3>
+  <textarea id="quoteText" placeholder="名言を入力してください"></textarea>
+  <input id="quoteAuthor" type="text" placeholder="名言の作者名（例：Aqua）">
+  <input id="quotePoster" type="text" placeholder="投稿者名（例：Yasunari）">
+  <textarea id="quoteMeaning" placeholder="名言の意味・解説を書いてください"></textarea>
+  <button onclick="addQuote()">追加</button>
+</div>
+
+<script>
+  // -------------------------
+  // ① 保存された名言を読み込む
+  // -------------------------
+  function loadQuotes() {
+    const saved = localStorage.getItem("quotes");
+    if (!saved) return;
+
+    const quotes = JSON.parse(saved);
+    quotes.forEach(q => renderQuote(q));
+  }
+
+  // -------------------------
+  // ② 名言を画面に表示する
+  // -------------------------
+  function renderQuote(q) {
+    const container = document.getElementById("quotes");
+
+    const box = document.createElement("div");
+    box.className = "quote-box";
+
+    box.innerHTML = `
+      <p>「${q.text}」</p>
+      <div class="author">— ${q.author}</div>
+      <div class="poster">
