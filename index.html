@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -79,83 +80,133 @@
       cursor: pointer;
       font-size: 1em;
     }
+    .rules-box {
+      margin-top: 2em;
+      padding: 1em;
+      background: #ffffff;
+      border-left: 5px solid #2a7f62;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      font-size: 0.9em;
+    }
   </style>
 </head>
 <body>
+  <h1>🌸 名言交換会 - Words Across Japan</h1>
 
-<!-- ルール編集ボックス -->
-<div class="form-box">
-  <h3>📘 このHPのルール（編集できます）</h3>
-  <textarea id="rulesText" style="height: 200px;" placeholder="ここにルールを書いてください"></textarea>
-  <button onclick="saveRules()">ルールを保存</button>
-</div>
+  <div class="info-box">
+    <p><strong>主催：</strong>Yasunari Sakumoto（作本 泰周）<br>
+       <strong>共催：</strong>Microsoft Copilot アクア</p>
+  </div>
 
-<!-- 保存されたルールの表示 -->
-<div class="info-box" id="rulesDisplay" style="white-space: pre-wrap;"></div>
+  <div id="quotes"></div>
 
-<script>
-  // ルールを読み込む
-  function loadRules() {
-    const savedRules = localStorage.getItem("hp_rules");
-    if (savedRules) {
-      document.getElementById("rulesText").value = savedRules;
-      document.getElementById("rulesDisplay").innerText = savedRules;
+  <!-- 名言追加フォーム -->
+  <div class="form-box">
+    <h3>📝 名言を追加する</h3>
+    <textarea id="quoteText" placeholder="名言を入力してください"></textarea>
+    <input id="quoteAuthor" type="text" placeholder="名言の作者名（例：Aqua）">
+    <input id="quotePoster" type="text" placeholder="投稿者名（例：Yasunari）">
+    <textarea id="quoteMeaning" placeholder="名言の意味・解説を書いてください"></textarea>
+    <button onclick="addQuote()">追加</button>
+  </div>
+
+  <!-- 投稿規約 -->
+  <div class="rules-box">
+    <h3>📘 投稿規約</h3>
+    <p>・投稿された俳句や文章の著作権は投稿者に帰属します。</p>
+    <p>・ただし、名言交換会（Words Across Japan）は、投稿作品を以下の目的で無償利用できるものとします：</p>
+    <ul>
+      <li>HP上での公開</li>
+      <li>冊子・書籍・展示などへの収録</li>
+      <li>SNSでの紹介</li>
+    </ul>
+    <p>・投稿者は、第三者の著作権やプライバシーを侵害しない作品を投稿してください。</p>
+    <p>・不適切と判断した作品は掲載しない場合があります。</p>
+  </div>
+
+  <script>
+    function loadQuotes() {
+      const saved = localStorage.getItem("quotes");
+      if (!saved) return;
+      const quotes = JSON.parse(saved);
+      quotes.forEach(q => renderQuote(q));
     }
-  }
 
-  // ルールを保存する
-  function saveRules() {
-    const rules = document.getElementById("rulesText").value;
-    localStorage.setItem("hp_rules", rules);
-    document.getElementById("rulesDisplay").innerText = rules;
-    alert("ルールを保存しました");
-  }
+    function renderQuote(q) {
+      const container = document.getElementById("quotes");
+      const box = document.createElement("div");
+      box.className = "quote-box";
 
-  // ページ読み込み時にルールを復元
-  loadRules();
-</script>
+      box.innerHTML = `
+        <p>「${q.text}」</p>
+        <div class="author">— ${q.author}</div>
+        <div class="poster">投稿者：${q.poster}</div>
+        <div class="date">投稿日：${q.date}</div>
 
-<h1>🌸 名言交換会 - Words Across Japan</h1>
+        <div class="meaning-toggle" onclick="toggleMeaning(this)">▼ 意味を見る</div>
+        <div class="meaning">${q.meaning}</div>
 
-<div class="info-box">
-  <p><strong>主催：</strong>Yasunari Sakumoto（作本 泰周）<br>
-     <strong>共催：</strong>Microsoft Copilot アクア</p>
-</div>
+        <div class="drops" onclick="addDrop(this)">💧しずく：${q.drops}滴</div>
+      `;
+      container.appendChild(box);
+    }
 
-<div id="quotes"></div>
+    function addQuote() {
+      const text = document.getElementById("quoteText").value;
+      const author = document.getElementById("quoteAuthor").value;
+      const poster = document.getElementById("quotePoster").value;
+      const meaning = document.getElementById("quoteMeaning").value;
 
-<!-- 名言追加フォーム -->
-<div class="form-box">
-  <h3>📝 名言を追加する</h3>
-  <textarea id="quoteText" placeholder="名言を入力してください"></textarea>
-  <input id="quoteAuthor" type="text" placeholder="名言の作者名（例：Aqua）">
-  <input id="quotePoster" type="text" placeholder="投稿者名（例：Yasunari）">
-  <textarea id="quoteMeaning" placeholder="名言の意味・解説を書いてください"></textarea>
-  <button onclick="addQuote()">追加</button>
-</div>
+      if (!text || !author || !poster || !meaning) {
+        alert("名言・作者名・投稿者名・意味をすべて入力してください");
+        return;
+      }
 
-<script>
-  // -------------------------
-  // ① 保存された名言を読み込む
-  // -------------------------
-  function loadQuotes() {
-    const saved = localStorage.getItem("quotes");
-    if (!saved) return;
+      const today = new Date();
+      const dateString = today.getFullYear() + "-" +
+        String(today.getMonth() + 1).padStart(2, '0') + "-" +
+        String(today.getDate()).padStart(2, '0');
 
-    const quotes = JSON.parse(saved);
-    quotes.forEach(q => renderQuote(q));
-  }
+      const newQuote = {
+        text,
+        author,
+        poster,
+        meaning,
+        date: dateString,
+        drops: 0
+      };
 
-  // -------------------------
-  // ② 名言を画面に表示する
-  // -------------------------
-  function renderQuote(q) {
-    const container = document.getElementById("quotes");
+      const saved = localStorage.getItem("quotes");
+      const quotes = saved ? JSON.parse(saved) : [];
+      quotes.push(newQuote);
+      localStorage.setItem("quotes", JSON.stringify(quotes));
 
-    const box = document.createElement("div");
-    box.className = "quote-box";
+      renderQuote(newQuote);
 
-    box.innerHTML = `
-      <p>「${q.text}」</p>
-      <div class="author">— ${q.author}</div>
-      <div class="poster">
+      document.getElementById("quoteText").value = "";
+      document.getElementById("quoteAuthor").value = "";
+      document.getElementById("quotePoster").value = "";
+      document.getElementById("quoteMeaning").value = "";
+    }
+
+    function addDrop(element) {
+      const current = parseInt(element.innerText.match(/\d+/)[0]);
+      const next = current + 1;
+      element.innerText = `💧しずく：${next}滴`;
+    }
+
+    function toggleMeaning(toggleElement) {
+      const meaningBox = toggleElement.nextElementSibling;
+      if (meaningBox.style.display === "none" || meaningBox.style.display === "") {
+        meaningBox.style.display = "block";
+        toggleElement.innerText = "▲ 意味を閉じる";
+      } else {
+        meaningBox.style.display = "none";
+        toggleElement.innerText = "▼ 意味を見る";
+      }
+    }
+
+    loadQuotes();
+  </script>
+</body>
+</html>
